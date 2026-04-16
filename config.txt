@@ -1,0 +1,2 @@
+# Valor em Ohms do resistor de calibracao
+R_CALIBRATION=999.8
