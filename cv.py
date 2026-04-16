@@ -248,27 +248,22 @@ def generate_plots(
 	e_mv = [row[2] * 1000 for row in converted_rows]
 	i_ma = [row[3] for row in converted_rows]
 
-	fig, axes = plt.subplots(2, 2, figsize=(16, 4.8))
+	fig, axes = plt.subplots(1, 3, figsize=(16, 4.8))
 
-	axes[0][0].plot(e_mv, i_ma, linewidth=0.8)
-	axes[0][0].set_xlabel("E vs RE (mV)")
-	axes[0][0].set_ylabel("I (mA)")
-	axes[0][0].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
+	axes[0].plot(e_mv, i_ma, linewidth=0.8)
+	axes[0].set_xlabel("E vs RE (mV)")
+	axes[0].set_ylabel("I (mA)")
+	axes[0].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
-	axes[0][1].plot(t_s, i_ma, linewidth=0.8)
-	axes[0][1].set_xlabel("t (s)")
-	axes[0][1].set_ylabel("I (mA)")
-	axes[0][1].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
+	axes[1].plot(t_s, i_ma, linewidth=0.8)
+	axes[1].set_xlabel("t (s)")
+	axes[1].set_ylabel("I (mA)")
+	axes[1].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
-	axes[1][0].plot(t_s, e_mv, linewidth=0.8)
-	axes[1][0].set_xlabel("t (s)")
-	axes[1][0].set_ylabel("E vs RE (mV)")
-	axes[1][0].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
-
-	axes[1][1].plot(e_mv, i_ma, linewidth=0.8)
-	axes[1][1].set_xlabel("E vs RE (mV)")
-	axes[1][1].set_ylabel("I (mA)")
-	axes[1][1].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
+	axes[2].plot(t_s, e_mv, linewidth=0.8)
+	axes[2].set_xlabel("t (s)")
+	axes[2].set_ylabel("E vs RE (mV)")
+	axes[2].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
 	fig.tight_layout()
 	plot_path: Path | None = None
