@@ -13,16 +13,25 @@ from config import load_r_calibration, resolve_arduino_port
 
 
 @dataclass(frozen=True)
+
 class CVParameters:
-	# Fixed execution parameters for simplified CV workflow.
+	# @TODO: é um resistor de 120 Ohms que está no circuito ou é o resistor de calibração?
 	read_resistor_ohm: float
-	e_initial: float = -1.0
-	e_vertex_1: float = 1.0
-	e_vertex_2: float = -1.0
-	e_final: float = -1.0
-	cycles: float = 3.0
-	scanrate_mvs: float = 50.0
-	conditioning_s: float = 5.0
+
+	# Começa a varredura nesse potencial.
+	e_initial: float  		= -1.0
+	# Primeiro vértice (primeiro ponto de inversão da rampa).
+	e_vertex_1: float 		= 1.0
+	# Segundo vértice (segundo ponto de inversão).
+	e_vertex_2: float 		= -1.0
+	# Potencial onde o experimento deve terminar depois dos ciclos.
+	e_final: float    		= -0.99
+	# Número de ciclos entre os vértices. No firmware ele é tratado como inteiro.
+	cycles: float			= 2.0
+	# Velocidade de varredura em mV/s.
+	scanrate_mvs: float 	= 50.0
+	# Tempo antes de iniciar a varredura, mantendo o potencial em e_initial.
+	conditioning_s: float	= 5.0
 
 @dataclass(frozen=True)
 class CalibrationOffsets:
@@ -224,34 +233,52 @@ def write_cv_output(
 			f_raw.write("\t".join(str(value) for value in row) + "\n")
 
 
-def generate_plots(output_path: Path, converted_rows: list[list[float]]) -> Path:
+def generate_plots(
+	output_path: Path,
+	converted_rows: list[list[float]],
+	*,
+	save_plot: bool = True,
+	show_plot: bool = False,
+) -> Path | None:
+
+	# isso é o que devo buscar
+	# https://upload.wikimedia.org/wikipedia/commons/4/4d/Cyclic_voltammetry%2C_the_case_of_one-electron_transfer_to_a_free-diffusing_molecule.svg
+
 	t_s = [row[1] / 1000.0 for row in converted_rows]
-	e_v = [row[2] for row in converted_rows]
+	e_mv = [row[2] * 1000 for row in converted_rows]
 	i_ma = [row[3] for row in converted_rows]
 
-	fig, axes = plt.subplots(1, 3, figsize=(16, 4.8))
+	fig, axes = plt.subplots(2, 2, figsize=(16, 4.8))
 
-	axes[0].plot(e_v, i_ma, linewidth=1.2)
-	axes[0].set_title("E vs I")
-	axes[0].set_xlabel("E vs RE (V)")
-	axes[0].set_ylabel("I (mA)")
-	axes[0].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
+	axes[0][0].plot(e_mv, i_ma, linewidth=0.8)
+	axes[0][0].set_xlabel("E vs RE (mV)")
+	axes[0][0].set_ylabel("I (mA)")
+	axes[0][0].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
-	axes[1].plot(t_s, i_ma, linewidth=1.2)
-	axes[1].set_title("t vs I")
-	axes[1].set_xlabel("t (s)")
-	axes[1].set_ylabel("I (mA)")
-	axes[1].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
+	axes[0][1].plot(t_s, i_ma, linewidth=0.8)
+	axes[0][1].set_xlabel("t (s)")
+	axes[0][1].set_ylabel("I (mA)")
+	axes[0][1].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
-	axes[2].plot(t_s, e_v, linewidth=1.2)
-	axes[2].set_title("t vs E")
-	axes[2].set_xlabel("t (s)")
-	axes[2].set_ylabel("E vs RE (V)")
-	axes[2].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
+	axes[1][0].plot(t_s, e_mv, linewidth=0.8)
+	axes[1][0].set_xlabel("t (s)")
+	axes[1][0].set_ylabel("E vs RE (mV)")
+	axes[1][0].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
+
+	axes[1][1].plot(e_mv, i_ma, linewidth=0.8)
+	axes[1][1].set_xlabel("E vs RE (mV)")
+	axes[1][1].set_ylabel("I (mA)")
+	axes[1][1].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
 	fig.tight_layout()
-	plot_path = output_path.with_suffix(".png")
-	fig.savefig(plot_path, dpi=150)
+	plot_path: Path | None = None
+	if save_plot:
+		plot_path = output_path.with_suffix(".png")
+		fig.savefig(plot_path, dpi=150)
+
+	if show_plot:
+		plt.show()
+
 	plt.close(fig)
 	return plot_path
 

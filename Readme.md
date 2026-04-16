@@ -1,7 +1,9 @@
 - Iniciando o ambiente e instando dependencias
 
 ```
+python -m venv venv
 .venv\Scripts\activate
+
 pip install -r requirements.txt
 ```
 
