@@ -1,7 +1,7 @@
 //==============================================================================================================================================================
 //==============================================================================================================================================================
-//        This is the firmware-script for the PolArStat was written by Tim Tichter. 
-//       
+//        This is the firmware-script for the PolArStat was written by Tim Tichter.
+//
 //==============================================================================================================================================================
 //==============================================================================================================================================================
 //      Here, the libraries for the external ADC (ADS1115) and DAC(MCP4725) are loaded and the I2C adresses are selected for communication
@@ -38,8 +38,8 @@ float         PotWindow              = 0;                                       
 float         DELAYTIME              = 0;                                           //  (zero as initial default) Time at each potential of the ramp according to sweep-rate
 float         DelayReducer           = 7575;                                        //  empirically found value to reduce the delay time to achieve precise timig for scanrates
 float         ReducedDelay           = 0;                                           //  This is the variable which will be the actual delay later on. (So DELAYTIME-DelayReducer)
-float         ElTime_S               = 0;                                           //  Elapsed time Start (start at beginning of experiment)           
-float         ElTime_E               = 0;                                           //  Elapsed time End   (maesure after writing the DAC at each time) 
+float         ElTime_S               = 0;                                           //  Elapsed time Start (start at beginning of experiment)
+float         ElTime_E               = 0;                                           //  Elapsed time End   (maesure after writing the DAC at each time)
 float         Inner_t_S              = 0;                                           //  time of the inner data step - start
 float         Inner_t_E              = 0;                                           //  time of the inner data step - end
 //==============================================================================================================================================================
@@ -58,9 +58,9 @@ float         time_3                 =  0;                                      
 float         time_4                 =  0;                                          //  0x25  = assotiated byte  - time of the first step
 float         time_5                 =  0;                                          //  0x26  = assotiated byte  - time of the first step
 int           CA_Rep                 =  0;                                          //  0x27  = assotiated byte for repetitions of CA cycles
-float         El_CA_Time_S           =  0;                                          //  Elapsed time for CA Start        
-float         El_CA_Time_Aux1        =  0;                                          //  Elapsed time for CA - auxiliary      
-float         El_CA_Time_Aux2        =  0;                                          //  Elapsed time for CA - auxiliary 
+float         El_CA_Time_S           =  0;                                          //  Elapsed time for CA Start
+float         El_CA_Time_Aux1        =  0;                                          //  Elapsed time for CA - auxiliary
+float         El_CA_Time_Aux2        =  0;                                          //  Elapsed time for CA - auxiliary
 float         El_CA_Time_E           =  0;                                          //  Elapsed time for CA End
 //==============================================================================================================================================================
 //==============================================================================================================================================================
@@ -89,7 +89,7 @@ void setup() {                                                                  
     TCCR1B = TCCR1B & B11111000 | B00000001;                                        //  set internal clock divisor to 1 for PWM frequency of 31372.55 Hz
     Wire.begin();                                                                   //  Begin the wire-clock for I2C communication
     Wire.setClock(800000);                                                          //  Set clock-speed of the wire
-    MCP.begin();                                                                    //  Begin communiction with DAC   
+    MCP.begin();                                                                    //  Begin communiction with DAC
     MCP.setValue(0);                                                                //  Wirte o V at the DAC output
     ADS.begin();                                                                    //  Begin communication witth the ADS1115
     ADS.setGain(1);                                                                 //  Choose the gain of the PGA of the ADS1115 (to be 1) pm 4096 mV
@@ -105,22 +105,17 @@ void setup() {                                                                  
     pinMode(A3,INPUT);
  //   Serial.println("alive!");
 
-/*    CellOn();
-    delay(50000);
-    CellOff();    
-    Serial.println("endtest!");*/
-    
  }                                                             //  Additional_input (not used further here)
 //==============================================================================================================================================================
 //==============================================================================================================================================================
 //    These three functions are used for controlling the cell on/off LED
 //==============================================================================================================================================================
-//============================================================================================================================================================== 
+//==============================================================================================================================================================
 void LED_On(){
-    digitalWrite(5, HIGH); 
+    digitalWrite(5, HIGH);
     delay(500);}
 void LED_Off(){
-    digitalWrite(5, LOW); 
+    digitalWrite(5, LOW);
     delay(500);}
 //==============================================================================================================================================================
 //==============================================================================================================================================================
@@ -143,7 +138,7 @@ void CellOff(){
     // blink three times to state that measurement is done
     //-------------------------------------------------------
     for(int Blinker = 0; Blinker <= 2; Blinker++){
-          digitalWrite(5, HIGH); 
+          digitalWrite(5, HIGH);
           delay(200);
           digitalWrite(5, LOW);
           delay(200);}}
@@ -153,31 +148,31 @@ void CellOff(){
 //==============================================================================================================================================================
 //==============================================================================================================================================================
 void WriteSerialOutput(int rampindex, float times, int Read_Ebit, int Read_Ibit, int CycNo) {
-    Serial.print(rampindex);                                          
+    Serial.print(rampindex);
     Serial.print("\t");
-    Serial.print(times);                                          
-    Serial.print("\t");  
-    Serial.print(Read_Ebit+Intrinsic_Offset_E);                                          
+    Serial.print(times);
+    Serial.print("\t");
+    Serial.print(Read_Ebit+Intrinsic_Offset_E);
     Serial.print("\t");
     Serial.print(Read_Ibit+Intrinsic_Offset_I);
     Serial.print("\t");
-    Serial.println(CycNo);}      // the last has to be a println, to get a return and linebreak. Otherwise, the data will not be real line by line in python.  
+    Serial.println(CycNo);}      // the last has to be a println, to get a return and linebreak. Otherwise, the data will not be real line by line in python.
 //==============================================================================================================================================================
 //==============================================================================================================================================================
 // This function is used to write the serial data from the potentiostat for Chronoamperometry and send it to the PC. Should be self-explaning :)
 //==============================================================================================================================================================
 //==============================================================================================================================================================
 void WriteSerialOutput_CA(int LoopNo, int SubNo, float times, int EBit, int IBit) {
-    Serial.print(LoopNo);                                          
+    Serial.print(LoopNo);
     Serial.print("\t");
-    Serial.print(SubNo);                                          
-    Serial.print("\t");  
-    Serial.print(times);                                          
+    Serial.print(SubNo);
+    Serial.print("\t");
+    Serial.print(times);
     Serial.print("\t");
     Serial.print(EBit+Intrinsic_Offset_E);
     Serial.print("\t");
-    Serial.println(IBit+Intrinsic_Offset_I);}      // the last has to be a println, to get a return and linebreak. Otherwise, the data will not be real line by line in python.  
-                        
+    Serial.println(IBit+Intrinsic_Offset_I);}      // the last has to be a println, to get a return and linebreak. Otherwise, the data will not be real line by line in python.
+
 //==============================================================================================================================================================
 //==============================================================================================================================================================
 // These two functions specify the ramp-function, whether it is ascending or decreasing.
@@ -186,12 +181,12 @@ void WriteSerialOutput_CA(int LoopNo, int SubNo, float times, int EBit, int IBit
 void UpRamp(int FromIDX, int ToIDX, int CycNo){                                           // create function for positive going sweep
      for(int RampIDX = FromIDX; RampIDX >= ToIDX ; RampIDX--){                            // for loop of the negative going sweep
           Inner_t_S = micros();                                                           // start counting the inner time loop for each potential step
-          while(Inner_t_E-Inner_t_S < ReducedDelay){                                      // as long as there is enaugh time for collecting a datapoint and writing the output, do it     
+          while(Inner_t_E-Inner_t_S < ReducedDelay){                                      // as long as there is enaugh time for collecting a datapoint and writing the output, do it
               MCP.setValue(RampIDX);                                                      // write to the DAC
               int16_t val_3 = ADS.readADC(3);                                             // read the bit-index of the ADS1115 at A3
               int16_t val_1 = ADS.readADC(1);                                             // read the bit-index of the ADS1115 at A1
               ElTime_E      = micros();                                                   // catch time directly after writing the DAC - this is the time to be written later on
-              WriteSerialOutput(RampIDX, (ElTime_E-ElTime_S), val_3, val_1, CycNo);       // writing the outputs with the function designed for that purpose 
+              WriteSerialOutput(RampIDX, (ElTime_E-ElTime_S), val_3, val_1, CycNo);       // writing the outputs with the function designed for that purpose
               Inner_t_E = micros();}                                                      // catch time inside of the while loop to decide if another conversion is possible
           Inner_t_E = micros();                                                           // catch time immediately after the while-loop is violated and -->
           delayMicroseconds(DELAYTIME - (Inner_t_E-Inner_t_S));                           // if no conversion in the step is possible anymore, waint until we reach the delaytime
@@ -202,12 +197,12 @@ void UpRamp(int FromIDX, int ToIDX, int CycNo){                                 
 void DownRamp(int FromIDX, int ToIDX, int CycNo){                                         // create function for positive going sweep
     for(int RampIDX = FromIDX; RampIDX <= ToIDX; RampIDX++){                              // for loop of the negative going sweep
         Inner_t_S = micros();                                                             // start counting the inner time loop for each potential step
-        while(Inner_t_E-Inner_t_S < ReducedDelay){                                        // as long as there is enaugh time for collecting a datapoint and writing the output, do it     
+        while(Inner_t_E-Inner_t_S < ReducedDelay){                                        // as long as there is enaugh time for collecting a datapoint and writing the output, do it
             MCP.setValue(RampIDX);                                                        // write to the DAC
             int16_t val_3 = ADS.readADC(3);                                               // read the bit-index of the ADS1115 at A3
             int16_t val_1 = ADS.readADC(1);                                               // read the bit-index of the ADS1115 at A1
             ElTime_E      = micros();                                                     // catch time directly after writing the DAC - this is the time to be written later on
-            WriteSerialOutput(RampIDX, (ElTime_E-ElTime_S), val_3, val_1, CycNo);         // writing the outputs with the function designed for that purpose 
+            WriteSerialOutput(RampIDX, (ElTime_E-ElTime_S), val_3, val_1, CycNo);         // writing the outputs with the function designed for that purpose
             Inner_t_E = micros();}                                                        // catch time inside of the while loop to decide if another conversion is possible
         Inner_t_E = micros();                                                             // catch time immediately after the while-loop is violated and -->
         delayMicroseconds(DELAYTIME - (Inner_t_E-Inner_t_S));                             // if no conversion in the step is possible anymore, waint until we reach the delaytime
@@ -220,15 +215,15 @@ void UpRamp_Slow(int FromIDX, int ToIDX, int CycNo){                            
      for(int RampIDX = FromIDX; RampIDX >= ToIDX ; RampIDX--){                            // for loop of the negative going sweep
           Inner_t_S = micros();                                                           // start counting the inner time loop for each potential step
           Inner_t_E = micros();                                                           // start counting the inner time loop for each potential step
-          //while(Inner_t_E-Inner_t_S < ReducedDelay-20000){                              // as long as there is enaugh time for collecting a datapoint and writing the output, do it     
-          while(DELAYTIME - (Inner_t_E-Inner_t_S) > DelayReducer+20000){                  // as long as there is enaugh time for collecting a datapoint and writing the output, do it 
+          //while(Inner_t_E-Inner_t_S < ReducedDelay-20000){                              // as long as there is enaugh time for collecting a datapoint and writing the output, do it
+          while(DELAYTIME - (Inner_t_E-Inner_t_S) > DelayReducer+20000){                  // as long as there is enaugh time for collecting a datapoint and writing the output, do it
               MCP.setValue(RampIDX);                                                      // write to the DAC
               int16_t val_3 = ADS.readADC(3);                                             // read the bit-index of the ADS1115 at A3
               int16_t val_1 = ADS.readADC(1);                                             // read the bit-index of the ADS1115 at A1
               ElTime_E      = micros();                                                   // catch time directly after writing the DAC - this is the time to be written later on
-              WriteSerialOutput(RampIDX, (ElTime_E-ElTime_S), val_3, val_1, CycNo);       // writing the outputs with the function designed for that purpose 
+              WriteSerialOutput(RampIDX, (ElTime_E-ElTime_S), val_3, val_1, CycNo);       // writing the outputs with the function designed for that purpose
               delay(20);                                                                  // IN THE SLOW RAMP, DELAY BY 20 milliseconds
-              Inner_t_E = micros();}                                                      // catch time inside of the while loop to decide if another conversion is possible                                           
+              Inner_t_E = micros();}                                                      // catch time inside of the while loop to decide if another conversion is possible
           Inner_t_E = micros();                                                           // catch time immediately after the while-loop is violated and -->
           while((Inner_t_E-Inner_t_S) < DELAYTIME){                                       // Take another while loop in steps of 2 microseconds
               delayMicroseconds(2);                                                       // thus, wait 2 microseconds. This has to be done like this, since the usual delay would be a number,
@@ -241,16 +236,16 @@ void DownRamp_Slow(int FromIDX, int ToIDX, int CycNo){                          
     for(int RampIDX = FromIDX; RampIDX <= ToIDX; RampIDX++){                              // for loop of the negative going sweep
         Inner_t_S = micros();                                                             // start counting the inner time loop for each potential step
         Inner_t_E = micros();                                                             // start counting the inner time loop for each potential step
-        while(Inner_t_E-Inner_t_S < ReducedDelay-20000){                                  // as long as there is enaugh time for collecting a datapoint and writing the output, do it     
+        while(Inner_t_E-Inner_t_S < ReducedDelay-20000){                                  // as long as there is enaugh time for collecting a datapoint and writing the output, do it
             MCP.setValue(RampIDX);                                                        // write to the DAC
             int16_t val_3 = ADS.readADC(3);                                               // read the bit-index of the ADS1115 at A3
             int16_t val_1 = ADS.readADC(1);                                               // read the bit-index of the ADS1115 at A1
             ElTime_E      = micros();                                                     // catch time directly after writing the DAC - this is the time to be written later on
-            WriteSerialOutput(RampIDX, (ElTime_E-ElTime_S), val_3, val_1, CycNo);         // writing the outputs with the function designed for that purpose 
+            WriteSerialOutput(RampIDX, (ElTime_E-ElTime_S), val_3, val_1, CycNo);         // writing the outputs with the function designed for that purpose
             delay(20);                                                                    // IN THE SLOW RAMP, DELAY BY 20 milliseconds
-            Inner_t_E = micros();}                                                        // catch time inside of the while loop to decide if another conversion is possible                                                         
+            Inner_t_E = micros();}                                                        // catch time inside of the while loop to decide if another conversion is possible
         Inner_t_E = micros();                                                             // catch time immediately after the while-loop is violated and -->
-        while((Inner_t_E-Inner_t_S) < DELAYTIME){                                         // Bitten lassen Sie mich wissen ob sich dies Ihrerseits 
+        while((Inner_t_E-Inner_t_S) < DELAYTIME){                                         // Bitten lassen Sie mich wissen ob sich dies Ihrerseits
               delayMicroseconds(2);                                                       // thus, wait 2 microseconds. This has to be done like this, since the usual delay would be a number,
               Inner_t_E = micros(); }                                                     // too large for the delay. If delaytime is surpassed, proceed with next ramp index
     }
@@ -272,7 +267,7 @@ void RunCV(){
     PotWindow          = (E_first_vertex-E_in);                             // potential-window of the  first up-ramp, required to define delay-time
     DELAYTIME          = (PotWindow*1000000000L/((Scanrate)*BitPoints));    // Time (in microseconds) at each potential of the ramp according to sweep-rate
     ReducedDelay       = DELAYTIME - DelayReducer;                          // Define the delay for each data point as difference of the time per step (delaytime) and the time required for conversion
-    
+
     //###################################
     // CONDITIONING BEFORE THE CV
     //###################################
@@ -322,7 +317,7 @@ void RunCV(){
                     UpRamp(IDX_first_Vertex-1, IDX_second_Vertex, Cyclecounter+1);}
                 DownRamp(IDX_second_Vertex+1, IDX_final, Cycles+1);}
             if(Cycles == 1){
-                DownRamp(IDX_second_Vertex-1, IDX_final,1);}}   
+                DownRamp(IDX_second_Vertex-1, IDX_final,1);}}
         if(Scanrate < 20){
             DownRamp_Slow(IDX_in, IDX_first_Vertex, 1);
             UpRamp_Slow(IDX_first_Vertex-1, IDX_second_Vertex, 1);
@@ -332,7 +327,7 @@ void RunCV(){
                     UpRamp_Slow(IDX_first_Vertex-1, IDX_second_Vertex, Cyclecounter+1);}
                 DownRamp_Slow(IDX_second_Vertex+1, IDX_final, Cycles+1);}
             if(Cycles == 1){
-                DownRamp_Slow(IDX_second_Vertex-1, IDX_final,1);}} 
+                DownRamp_Slow(IDX_second_Vertex-1, IDX_final,1);}}
     }
     //###################################
     Serial.println(999999); // The stop-sequence
@@ -354,7 +349,7 @@ void Chronoamperometric_Sub_Step(int Loop_Position, int Sub_Loop_Position, int C
         WriteSerialOutput_CA(Loop_Position, Sub_Loop_Position, (El_CA_Time_E-El_CA_Time_S), val_3, val_1);   //  write outputs
         El_CA_Time_Aux2  = millis();}                                                                        //  update axiliary time2
     El_CA_Time_Aux1 = millis();                                                                              //  if while loop is broken, update axiliary time1
-    El_CA_Time_Aux2 = millis();}                                                                             //  if while loop is broken, update axiliary time2                                                       
+    El_CA_Time_Aux2 = millis();}                                                                             //  if while loop is broken, update axiliary time2
 
 //==============================================================================================================================================================
 //==============================================================================================================================================================
@@ -377,7 +372,7 @@ void RunCA(){
     El_CA_Time_Aux1 = millis();
     El_CA_Time_Aux2 = millis();
     El_CA_Time_E    = millis();
-    for(int CA_Num = 1; CA_Num <= int(CA_Rep); CA_Num++){  
+    for(int CA_Num = 1; CA_Num <= int(CA_Rep); CA_Num++){
         Chronoamperometric_Sub_Step(CA_Num, 1, time_1, IDX_CA_1);
         Chronoamperometric_Sub_Step(CA_Num, 2, time_2, IDX_CA_2);
         Chronoamperometric_Sub_Step(CA_Num, 3, time_3, IDX_CA_3);
@@ -416,9 +411,9 @@ void RunCA(){
 //#######################################################################################################################################
 void loop(){
     while(!Serial.available());                        //  !Serial.available is like Serial.available, but waits until a serial input is provided
-    Serial.readBytes(buf, BUFFER_SIZE);                //  read the input from the python script, which is send in line 100 via  arduino.write(SEND_BYTES) 
-    char fBuffer[] = {buf[2],buf[3],buf[4],buf[5]};    //  initialize another char, called fBuffer and write the second, third, fourth and fifth byte 
-                                                       //  (so the float which is transmitted from python). Note, the zeroth byte is the check_byte and the 
+    Serial.readBytes(buf, BUFFER_SIZE);                //  read the input from the python script, which is send in line 100 via  arduino.write(SEND_BYTES)
+    char fBuffer[] = {buf[2],buf[3],buf[4],buf[5]};    //  initialize another char, called fBuffer and write the second, third, fourth and fifth byte
+                                                       //  (so the float which is transmitted from python). Note, the zeroth byte is the check_byte and the
                                                        //  first byte is the float_byte (so both are not the information of the float number transmitted)
     float x = *(float *)&fBuffer;                      //  convert byte buffer to float buffer
     //======================================================================================================================
@@ -445,28 +440,28 @@ void loop(){
         //--------------------------------------------------------------------------------------------------------------------------------------------
         //    Potentiostat_Code, First, set the bytes for the CV parameters
         //--------------------------------------------------------------------------------------------------------------------------------------------
-        //--------------------------------------------------------------------------------------------------------------------------------------------                            
+        //--------------------------------------------------------------------------------------------------------------------------------------------
         case 0x11:     // SET CV params                  //  In case it is 0x11, so the set byte, enter this loop
             switch(buf[1]){                              //  If statement for the second (first) byte
                 case 0x10:                               //  In case of  0x11_0x10_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
                     E_in                   = x;          //  Take the x-value float as Ein and -->
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x11:                               //  In case of  0x11_0x11_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
                     E_first_vertex         = x;          //  Take the x-value float as E_first_vertex in and -->
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
-                case 0x12:                               //  Take the x-value float as Ein and --> 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
+                case 0x12:                               //  Take the x-value float as Ein and -->
                     E_second_vertex        = x;          //  In case of  0x11_0x12_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
-                case 0x13:                               //  Take the x-value float as E_final and --> 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
+                case 0x13:                               //  Take the x-value float as E_final and -->
                     E_final                = x;          //  In case of  0x11_0x13_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
-                case 0x14:                               //  Take the x-value float, convert it to an integer and assign it as Cycles and --> 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
+                case 0x14:                               //  Take the x-value float, convert it to an integer and assign it as Cycles and -->
                     Cycles                 = int(x);     //  In case of  0x11_0x14_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
-                case 0x15:                               //  Take the x-value float as Scanrate and --> 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
+                case 0x15:                               //  Take the x-value float as Scanrate and -->
                     Scanrate               = x;          //  In case of  0x11_0x15_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
-                case 0x16:                               //  Take the x-value float as Conditime and --> 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
+                case 0x16:                               //  Take the x-value float as Conditime and -->
                     Conditime              = 1000*x;     //  In case of  0x11_0x16_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
                     break;}                              //  Break the buf[1] Leave back to the start of the void to receive the next value/command
             break;
@@ -474,7 +469,7 @@ void loop(){
         //--------------------------------------------------------------------------------------------------------------------------------------------
         //    CV_Code, Return/print the parameters, which were set
         //--------------------------------------------------------------------------------------------------------------------------------------------
-        //--------------------------------------------------------------------------------------------------------------------------------------------                            
+        //--------------------------------------------------------------------------------------------------------------------------------------------
         case 0x22:                                        //  READ the inputs which were send from PC and send them back TO PC
             Serial.println(E_in);                         //  If any reading bit for the inputs is trasmitted, print all transmitted parameters
             Serial.println(E_first_vertex);               //  If any reading bit for the inputs is trasmitted, print all transmitted parameters
@@ -488,8 +483,8 @@ void loop(){
         //--------------------------------------------------------------------------------------------------------------------------------------------
         //    Potentiostat_Code, Run the measurement
         //--------------------------------------------------------------------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------------------------------------------------------------------- 
-        case 0x33:                                                        // DO something in buf[0]                  
+        //--------------------------------------------------------------------------------------------------------------------------------------------
+        case 0x33:                                                        // DO something in buf[0]
             //----------------------------------------------------------------------------------------------------------------------------------------
             // Running a CV
             //----------------------------------------------------------------------------------------------------------------------------------------
@@ -501,9 +496,9 @@ void loop(){
                     delay(1000);                          //  delay to settle everything
                     break;}                               //  break the buf[1] case
             break;                                        //  Break the buf[0] - case once CV is done
-            
-        
-        
+
+
+
         //############################################################################################################################################
         //############################################################################################################################################
         //    CHRONOAMPEROMETRY
@@ -513,49 +508,49 @@ void loop(){
         //--------------------------------------------------------------------------------------------------------------------------------------------
         //    Chronoamperometry_Code, First, set the bytes for the CA parameters if buf[0] equals 0x12, chronoamperometry setting is addressed
         //--------------------------------------------------------------------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------------------------------------------------------------------- 
-        case 0x12:                                       //  DO something if buf[0]=0x12 
+        //--------------------------------------------------------------------------------------------------------------------------------------------
+        case 0x12:                                       //  DO something if buf[0]=0x12
             switch(buf[1]){                              //  If statement for the second (first) byte
                 case 0x17:                               //  In case of  0x10_0x17_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
                     E_CA_1                   = x;        //  Take the x-value float as E_CA_1 and -->
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x18:                               //  In case of  0x10_0x18_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
                     E_CA_2                   = x;        //  Take the x-value float as E_CA_2 and -->
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x19:                               //  In case of  0x10_0x19_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
                     E_CA_3                   = x;        //  Take the x-value float as E_CA_3 and -->
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x20:                               //  In case of  0x10_0x20_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    E_CA_4                   = x;        //  Take the x-value float as E_CA_4 and --> 
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    E_CA_4                   = x;        //  Take the x-value float as E_CA_4 and -->
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x21:                               //  In case of  0x10_0x21_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
                     E_CA_5                   = x;        //  Take the x-value float as E_CA_5 and -->
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x22:                               //  In case of  0x10_0x22_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    time_1                   = x;        //  Take the x-value float as time_1 and --> 
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    time_1                   = x;        //  Take the x-value float as time_1 and -->
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x23:                               //  In case of  0x10_0x23_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    time_2                   = x;        //  Take the x-value float as time_2 and -->  
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    time_2                   = x;        //  Take the x-value float as time_2 and -->
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x24:                               //  In case of  0x10_0x24_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    time_3                   = x;        //  Take the x-value float as time_3 and --> 
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    time_3                   = x;        //  Take the x-value float as time_3 and -->
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x25:                               //  In case of  0x10_0x25_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    time_4                   = x;        //  Take the x-value float as time_4 and --> 
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    time_4                   = x;        //  Take the x-value float as time_4 and -->
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x26:                               //  In case of  0x10_0x26_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    time_5                   = x;        //  Take the x-value float as time_5 and --> 
-                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command 
+                    time_5                   = x;        //  Take the x-value float as time_5 and -->
+                    break;                               //  Break the buf[1] Leave back to the start of the void to receive the next value/command
                 case 0x27:                               //  In case of  0x10_0x27_0x--_0x--_0x--_0x--_ , where the 0x-- specify the float
-                    CA_Rep                   = int(x);   //  Take the x-value float as CA_Rep and transfer it to an integer and --> 
+                    CA_Rep                   = int(x);   //  Take the x-value float as CA_Rep and transfer it to an integer and -->
                     break;}                              //  Break the buf[1] Leave back to the start of the void to receive the next value/command
-            break;                 
+            break;
         //--------------------------------------------------------------------------------------------------------------------------------------------
         //--------------------------------------------------------------------------------------------------------------------------------------------
         //    Chronoamperometry_Code, First, set the bytes for the CA parameters if buf[0] equals 0x13, chronoamperometry returning is addressed
         //--------------------------------------------------------------------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------------------------------------------------------------------- 
-        case 0x13:                                         //  DO something if buf[0]=0x13 
+        //--------------------------------------------------------------------------------------------------------------------------------------------
+        case 0x13:                                         //  DO something if buf[0]=0x13
             Serial.println(E_CA_1);                        //  If any reading bit for the inputs is trasmitted, print all transmitted parameters
             Serial.println(E_CA_2);                        //  If any reading bit for the inputs is trasmitted, print all transmitted parameters
             Serial.println(E_CA_3);                        //  If any reading bit for the inputs is trasmitted, print all transmitted parameters
@@ -572,27 +567,12 @@ void loop(){
         //--------------------------------------------------------------------------------------------------------------------------------------------
         //    Chronoamperometry_Code, Run the measurement if buf[0] equals 0x14
         //--------------------------------------------------------------------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------------------------------------------------------------------- 
-        case 0x14:                                         //  DO something in buf[0]                          
+        //--------------------------------------------------------------------------------------------------------------------------------------------
+        case 0x14:                                         //  DO something in buf[0]
             CellOn();
             RunCA();
             CellOff();
             delay(1000);
             break;}                                         //  Break the buf[0] - case
-                                                       
-        }    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
+        }
