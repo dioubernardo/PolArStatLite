@@ -1,3 +1,29 @@
+/*
+    Firmware de teste de hardware - PolArStatLite
+
+    Este firmware executa quatro testes principais:
+    1) Inicio de escala (MCP = 0)
+    2) Meio de escala (MCP = 2047)
+    3) Fim de escala (MCP = 4095)
+    4) Sweep completo do MCP
+
+    Em todos os testes, o firmware escreve no MCP4725 e faz leituras nos canais
+    ADS1 e ADS3 do ADS1115.
+
+    Como rodar pela Arduino IDE:
+    - Fazer upload deste firmware
+    - Abrir o Serial Monitor em 115200 baud
+    - Enviar os comandos abaixo:
+        0 -> teste com MCP = 0
+        1 -> teste com MCP = 2047
+        2 -> teste com MCP = 4095
+        3 -> sweep do MCP de 0 ate 4095, em passos de 10
+
+    Observacao:
+    - Os comandos acima sao caracteres ASCII enviados no Serial Monitor.
+        Ex.: 0 corresponde ao byte 0x30.
+*/
+
 #include "Wire.h"
 #include "ADS1X15.h"
 #include "MCP4725.h"
@@ -15,8 +41,8 @@ void executeMCPSweep() {
     int16_t ads1, ads3;
 
     int dacCode = 0;
-    int step = 50;
-    
+    int step = 10;
+
     while (1) {
         MCP.setValue(dacCode);
         delay(100);
@@ -32,16 +58,16 @@ void executeMCPSweep() {
 
         Serial.print(" ADS1=");
         Serial.println(ads1);
-    
+
         if (dacCode == 4095) break;
-    
+
         if (dacCode + step > 4095) {
             dacCode = 4095;
         } else {
             dacCode += step;
         }
     }
-    
+
     digitalWrite(2, LOW);
     digitalWrite(5, LOW);
 }
