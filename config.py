@@ -40,27 +40,3 @@ def resolve_arduino_port() -> str:
 			return ports[selected - 1][0]
 
 		print("[ERRO] Opção fora da lista de portas disponíveis.")
-
-
-def load_r_calibration(base_dir: Path, *, default: str | None = None) -> str:
-	config_path = base_dir / "config.txt"
-	if not config_path.exists():
-		if default is not None:
-			return default
-		raise RuntimeError("Arquivo config.txt nao encontrado para ler R_CALIBRATION.")
-
-	for raw_line in config_path.read_text(encoding="utf-8").splitlines():
-		line = raw_line.strip()
-		if not line or line.startswith("#") or "=" not in line:
-			continue
-		key, value = line.split("=", 1)
-		if key.strip() == "R_CALIBRATION":
-			parsed = value.strip().strip('"').strip("'")
-			if parsed:
-				return parsed
-			break
-
-	if default is not None:
-		return default
-
-	raise RuntimeError("R_CALIBRATION nao definido no config.txt.")

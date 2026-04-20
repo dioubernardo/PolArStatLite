@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 import serial
-from config import load_r_calibration, resolve_arduino_port
+from config import resolve_arduino_port
 
 
 def parse_float(raw: bytes) -> float:
@@ -129,17 +129,13 @@ def run_calibration(port: str, output_dir: Path) -> Path:
 	return output_path
 
 
-def print_startup_warning(r_calibration: str) -> None:
-	banner = "=" * 72
-	print(banner)
+def print_startup_warning() -> None:
 	print("ATENCAO: CONECTE O RESISTOR DE CALIBRACAO ANTES DE INICIAR")
-	print(f"(WE---R{r_calibration}---RE/CE)")
-	print(banner)
+	print(f"(WE --- R 1000 Ohms --- RE/CE)")
 
 def main() -> None:
 	base_dir = Path(__file__).resolve().parent
-	r_calibration = load_r_calibration(base_dir, default="1000")
-	print_startup_warning(r_calibration)
+	print_startup_warning()
 
 	port = resolve_arduino_port()
 	output_dir = base_dir / "CALIBRATION"

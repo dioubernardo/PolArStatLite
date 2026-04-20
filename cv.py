@@ -9,14 +9,14 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import serial
 
-from config import load_r_calibration, resolve_arduino_port
+from config import resolve_arduino_port
 
 
 @dataclass(frozen=True)
 
 class CVParameters:
 	# @TODO: é um resistor de 120 Ohms que está no circuito ou é o resistor de calibração?
-	read_resistor_ohm: float
+	read_resistor_ohm: float = 120.0
 
 	# Começa a varredura nesse potencial.
 	e_initial: float  		= -1.0
@@ -235,23 +235,20 @@ def write_cv_output(
 
 def generate_plots(
 	output_path: Path,
-	converted_rows: list[list[float]],
-	*,
-	save_plot: bool = True,
-	show_plot: bool = False,
+	converted_rows: list[list[float]]
 ) -> Path | None:
 
 	# isso é o que devo buscar
 	# https://upload.wikimedia.org/wikipedia/commons/4/4d/Cyclic_voltammetry%2C_the_case_of_one-electron_transfer_to_a_free-diffusing_molecule.svg
 
 	t_s = [row[1] / 1000.0 for row in converted_rows]
-	e_mv = [row[2] * 1000 for row in converted_rows]
+	e_v = [row[2] for row in converted_rows]
 	i_ma = [row[3] for row in converted_rows]
 
 	fig, axes = plt.subplots(1, 3, figsize=(16, 4.8))
 
-	axes[0].plot(e_mv, i_ma, linewidth=0.8)
-	axes[0].set_xlabel("E vs RE (mV)")
+	axes[0].plot(e_v, i_ma, linewidth=0.8)
+	axes[0].set_xlabel("E vs RE (V)")
 	axes[0].set_ylabel("I (mA)")
 	axes[0].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
@@ -260,19 +257,15 @@ def generate_plots(
 	axes[1].set_ylabel("I (mA)")
 	axes[1].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
-	axes[2].plot(t_s, e_mv, linewidth=0.8)
+	axes[2].plot(t_s, e_v, linewidth=0.8)
 	axes[2].set_xlabel("t (s)")
-	axes[2].set_ylabel("E vs RE (mV)")
+	axes[2].set_ylabel("E vs RE (V)")
 	axes[2].grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
 	fig.tight_layout()
 	plot_path: Path | None = None
-	if save_plot:
-		plot_path = output_path.with_suffix(".png")
-		fig.savefig(plot_path, dpi=150)
-
-	if show_plot:
-		plt.show()
+	plot_path = output_path.with_suffix(".png")
+	fig.savefig(plot_path, dpi=150)
 
 	plt.close(fig)
 	return plot_path
@@ -313,16 +306,11 @@ def run_cv(port: str, output_path: Path, offsets: CalibrationOffsets, params: CV
 
 def main() -> None:
 	base_dir = Path(__file__).resolve().parent
-	try:
-		read_resistor_ohm = float(load_r_calibration(base_dir))
-	except ValueError as exc:
-		raise RuntimeError("R_CALIBRATION invalido no config.txt.") from exc
-	params = CVParameters(read_resistor_ohm=read_resistor_ohm)
+	params = CVParameters()
 
 	offsets = load_calibration_offsets(base_dir)
 	print(f"[INFO] Arquivo de calibracao em uso: {offsets.calibration_file}")
 	print(f"[INFO] Zero_IDX_E={offsets.zero_idx_e} | Zero_IDX_I={offsets.zero_idx_i}")
-	print(f"[INFO] R_CALIBRATION em uso: {params.read_resistor_ohm} ohm")
 
 	port = resolve_arduino_port()
 	output_dir = base_dir / "OUTPUT"
