@@ -31,9 +31,6 @@
 MCP4725 MCP(0x60);
 ADS1115 ADS(0x48);
 
-const int BUFFER_SIZE = 8;
-char buf[BUFFER_SIZE];
-
 void executeMCPSweep() {
     digitalWrite(2, HIGH);
     digitalWrite(5, HIGH);
@@ -41,7 +38,7 @@ void executeMCPSweep() {
     int16_t ads1, ads3;
 
     int dacCode = 0;
-    int step = 10;
+    int step = 50;
 
     while (1) {
         MCP.setValue(dacCode);
@@ -123,9 +120,19 @@ void loop() {
     while (!Serial.available()) {
     }
 
-    Serial.readBytes(buf, BUFFER_SIZE);
+    int incoming = Serial.read();
+    if (incoming < 0) {
+        return;
+    }
 
-    switch ((uint8_t)buf[0]) {
+    uint8_t command = (uint8_t)incoming;
+
+    // Drain any stale bytes to keep command framing clean.
+    while (Serial.available() > 0) {
+        Serial.read();
+    }
+
+    switch (command) {
         case 0x30:
             // Start of scale: write 0 and read ADS1/ADS3.
             executeStep(0);
@@ -144,7 +151,7 @@ void loop() {
             break;
         default:
             Serial.print("UNKNOWN_CMD=0x");
-            Serial.println((uint8_t)buf[0], HEX);
+            Serial.println(command, HEX);
             break;
     }
 }
