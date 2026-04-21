@@ -15,7 +15,7 @@ from config import resolve_arduino_port
 @dataclass(frozen=True)
 
 class CVParameters:
-	# @TODO: é um resistor de 120 Ohms que está no circuito ou é o resistor de calibração?
+	# @TODO: valor do R14, pensar em trocar para 10k para alcançar a escala da ana
 	read_resistor_ohm: float = 120.0
 
 	# Começa a varredura nesse potencial.
