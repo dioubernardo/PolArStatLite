@@ -86,7 +86,8 @@ def send_cv_parameters(arduino: serial.Serial, params: CVParameters) -> None:
 
 	for packet in packets:
 		arduino.write(packet)
-		time.sleep(2)
+		arduino.flush()
+		time.sleep(1)
 
 
 def collect_cv_data(arduino: serial.Serial) -> list[list[float]]:
